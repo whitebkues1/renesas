@@ -27,3 +27,38 @@ void user_uart_callback (uart_callback_args_t * p_args)
 #else
     #define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
 #endif
+
+PUTCHAR_PROTOTYPE
+{
+    R_SCI_UART_Write(&g_uart0_ctrl, (uint8_t *)&ch, 1);
+    while(uart_send_complete_flag == false){}
+    uart_send_complete_flag = false;
+    return ch;
+}
+
+GETCHAR_PROTOTYPE
+{
+    uint8_t ch = 0;
+    R_SCI_UART_Read(&g_uart0_ctrl, (uint8_t *)&ch, 1);
+    while(uart_receive_complete_flag == false){}
+    uart_receive_complete_flag = false;
+    return ch;
+}
+
+int _write(int fd,char *pBuffer,int size)
+{
+    (void)fd;
+    for(int i=0;i<size;i++)
+    {
+        __io_putchar(*pBuffer++);
+    }
+    return size;
+}
+
+int _read(int fd, char *pBuffer, int size)
+{
+    (void)fd;
+    (void)size;
+    *pBuffer = __io_getchar();
+    return 1;
+}
